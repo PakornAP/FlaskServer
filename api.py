@@ -22,15 +22,14 @@ def hello():
    return res
 
 @app.route("/user",methods=["GET"])
-def users():
+def getuser():
    # -- forming request
    name = request.args.get("name")
    if name is None or name == "":
       #  -- return error case
        return jsonify({"message" : "invalid request" , "data" : None}), BAD_REQUEST 
-   # -- calling service
+   # -- database repository
    collection = UserDAO(uri=db_uri,port=db_port,database_name="FlaskServer",collection_name="users")
-   # -- database query
    try:
       result = collection.find_user_by_name(name)
    except:
@@ -41,9 +40,15 @@ def users():
       return jsonify({"message" : "forming response error", "data" : None}) , INTERNAL_SERVER_ERROR
    res = jsonify({"message" : "success","data" :result.to_dict()}), OK
    return res
+
+@app.route("/ismask",methods=["POST"])
+def ismask():
+   
+   return
+
+# -- main section
 if __name__ == "__main__":
    load_dotenv()
    db_uri = getenv("DB_URI")
    db_port = int(getenv("DB_PORT"))
-   
    app.run(port=8080, debug=True, use_reloader=False)
