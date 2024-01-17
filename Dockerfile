@@ -6,5 +6,5 @@ RUN python -m venv opt/my-venv
 RUN pip install --upgrade pip
 WORKDIR /app
 COPY . /app
-RUN pip install -Ur --default-timeout=50000 -r requirements.txt
+RUN pip install -Ur --default-timeout=50000 requirements.txt
 CMD ["python", "api.py"]
