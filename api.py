@@ -1,9 +1,10 @@
 from dotenv import load_dotenv
-from os import getenv
+from os import getenv , path
+import cv2
 from flask import Flask, request, jsonify
 from http.client import OK , BAD_REQUEST , INTERNAL_SERVER_ERROR
 from repository.database import UserDAO , User
-from services.service import Helloname
+from services.service import Helloname , MaskDetection
 app = Flask(__name__)
 
 # -- create route (controller)
@@ -33,7 +34,7 @@ def getuser():
    try:
       result = collection.find_user_by_name(name)
    except:
-      return jsonify({"message" : "database connection error", "data" : None}) , INTERNAL_SERVER_ERROR
+      return jsonify({"message" : "database process error", "data" : None}) , INTERNAL_SERVER_ERROR
    collection.close_connection()
    # -- forming response
    if result is None:
@@ -41,10 +42,47 @@ def getuser():
    res = jsonify({"message" : "success","data" :result.to_dict()}), OK
    return res
 
+@app.route("/user", methods=["PUT"])
+def putuser():
+   # -- forming request
+   keys = ["name" , "age", "feel","filepath","ismask"]
+   for k in keys:
+      if k not in request.get_json():
+         return jsonify({"message" : f"invalid request missing key {k}" , "data" : None}), BAD_REQUEST
+   name = request.json["name"]
+   age = int(request.json["age"])
+   feel = request.json["feel"]
+   filepath = request.json["filepath"]
+   ismask = bool(request.json["ismask"])
+   # -- database repository
+   user = User(name,age,feel,filepath,ismask)
+   collection = UserDAO(uri=db_uri,port=db_port,database_name="FlaskServer",collection_name="users")
+   try:
+      result = collection.insert_user(user)
+      print(result)
+   except:
+      return jsonify({"message" : "insert to database error", "data" : str(result)}) , INTERNAL_SERVER_ERROR
+   collection.close_connection()
+   return jsonify({"message" : "insert success","data" :str(result)}), OK
+
 @app.route("/ismask",methods=["POST"])
 def ismask():
-   
-   return
+   # -- forming request
+   filepath = request.json["filepath"]
+   if request is None or filepath is None or not path.exists(filepath) :
+      #  -- return error case
+       return jsonify({"message" : "invalid request" , "data" : None}), BAD_REQUEST 
+   try:
+      image = cv2.imread(filepath)
+      image = cv2.resize(image,(224,224))
+      isMask = MaskDetection(image)
+   except:
+      return jsonify({"message" : "service ismask error", "data" : None}) , INTERNAL_SERVER_ERROR
+   # -- forming response
+   if isMask is None:
+      return jsonify({"message" : "forming response error", "data" : None}) , INTERNAL_SERVER_ERROR
+   res = jsonify({"message" : "success","ismask" :isMask}), OK
+   return res
 
 # -- main section
 if __name__ == "__main__":

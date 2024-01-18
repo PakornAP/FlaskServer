@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-
 class UserDAO:
     def __init__(self, uri , port, database_name, collection_name):
         self.client = MongoClient(uri , port)
@@ -8,6 +7,7 @@ class UserDAO:
 
     def insert_user(self, user):
         user_data = user.to_dict()
+        print(user_data)
         return self.collection.insert_one(user_data)
 
     def find_user_by_name(self, name):
