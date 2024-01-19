@@ -1,10 +1,13 @@
 FROM python:3.11.7-bullseye
-RUN apk update
-RUN apk add py-pip
-RUN apk add --no-cache python3-dev 
-RUN python -m venv opt/my-venv
-RUN pip install --upgrade pip
+# Install system libraries
+RUN apt-get update && apt-get install -y libgl1-mesa-glx
 WORKDIR /app
+# Create a virtual environment
+RUN python3 -m venv /opt/my-venv
+RUN pip install --upgrade pip
 COPY . /app
-RUN pip install -Ur --default-timeout=50000 requirements.txt
+# Install Flask and other dependencies
+RUN pip install --no-cache-dir flask python-dotenv opencv-python pymongo
+RUN pip install --no-cache-dir tensorflow
+EXPOSE 8080
 CMD ["python", "api.py"]
