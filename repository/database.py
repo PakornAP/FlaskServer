@@ -1,12 +1,12 @@
 from pymongo import MongoClient
 class UserDAO:
-    def __init__(self, uri , port, database_name, collection_name):
+    def __init__(self, uri , database_name, collection_name):
         try:
-            self.client = MongoClient(uri , port)
-            self.db = self.client[database_name]
-            self.collection = self.db[collection_name]
+            self.client = MongoClient(uri)
         except OSError or ValueError or Exception as e:
-            print(f"data connect error {e}")
+            print(f"database connect error {e}")
+        self.db = self.client[database_name]
+        self.collection = self.db[collection_name]
         
 
     def insert_user(self, user):

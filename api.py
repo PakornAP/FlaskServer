@@ -30,7 +30,7 @@ def getuser():
       #  -- return error case
        return jsonify({"message" : "invalid request" , "data" : None}), BAD_REQUEST 
    # -- database repository
-   collection = UserDAO(uri=db_uri,port=db_port,database_name="FlaskServer",collection_name="users")
+   collection = UserDAO(uri=db_uri,database_name="FlaskServer",collection_name="users")
    try:
       result = collection.find_user_by_name(name)
    except:
@@ -56,14 +56,14 @@ def putuser():
    ismask = bool(request.json["ismask"])
    # -- database repository
    user = User(name,age,feel,filepath,ismask)
-   collection = UserDAO(uri=db_uri,port=db_port,database_name="FlaskServer",collection_name="users")
+   collection = UserDAO(uri=db_uri,database_name="FlaskServer",collection_name="users")
    try:
       result = collection.insert_user(user)
       print(result)
    except:
       return jsonify({"message" : "insert to database error", "data" : str(result)}) , INTERNAL_SERVER_ERROR
    collection.close_connection()
-   return jsonify({"message" : "insert success","data" :str(result)}), OK
+   return jsonify({"message" : f"insert {name} success","data" :str(result)}), OK
 
 @app.route("/ismask",methods=["POST"])
 def ismask():
@@ -88,6 +88,5 @@ def ismask():
 if __name__ == "__main__":
    load_dotenv()
    db_uri = getenv("DB_URI")
-   db_port = int(getenv("DB_PORT"))
-   print(f"URI {db_uri} PORT {db_port}")
+   print(f"URI {db_uri}")
    app.run(host="0.0.0.0",port=8080, debug=True, use_reloader=False)
